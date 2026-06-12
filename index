@@ -4,31 +4,21 @@
     <meta charset="utf-8">
     <title>아버님 전용 AI 기원</title>
     <style>
-    body { text-align: center; background: #f0f0f0; font-family: sans-serif; }
-    /* 💡 핵심: 바둑판 박스 크기를 500x500으로 딱 고정하고, 안의 선들을 강제로 배치합니다 */
-    #board { 
-        width: 500px; 
-        height: 500px; 
-        margin: 20px auto; 
-        background: #e4a054; 
-        border: 2px solid #555; 
-        position: relative; 
-    }
-    .line { position: absolute; background: black; }
-</style>
+        body { text-align: center; background: #f0f0f0; }
+        /* 💡 배경으로 나무 바둑판 이미지를 아예 통으로 깔아버립니다! */
+        #board { 
+            width: 500px; 
+            height: 500px; 
+            margin: 50px auto; 
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/4/4e/Go_board_19x19.svg');
+            background-size: contain;
+            border: 2px solid #555;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <h1>아버님 전용 AI 기원 🎴</h1>
-    <div id="board"></div>
-    <script>
-        const board = document.getElementById('board');
-        const size = 19;
-        const cellSize = 500 / (size + 1);
-        for(let i=1; i<=size; i++) {
-            let h = document.createElement('div'); h.className = 'line'; h.style.width = '450px'; h.style.height = '1px'; h.style.top = (i*cellSize) + 'px'; h.style.left = cellSize + 'px'; board.appendChild(h);
-            let v = document.createElement('div'); v.className = 'line'; v.style.height = '450px'; v.style.width = '1px'; v.style.left = (i*cellSize) + 'px'; v.style.top = cellSize + 'px'; board.appendChild(h); board.appendChild(v);
-        }
-        board.onclick = (e) => alert("아버님, 여기에 돌을 놓으시겠습니까?");
-    </script>
+    <div id="board" onclick="alert('아버님, 여기에 돌을 놓으시겠습니까?')"></div>
 </body>
 </html>
