@@ -3,20 +3,18 @@
 <head>
     <meta charset="utf-8">
     <title>아버님 전용 AI 기원</title>
-    <script src="https://cdn.jsdelivr.net/npm/wgo@2.3.1/wgo.min.js"></script>
     <style>
         body { text-align: center; background: #e9ecef; font-family: '맑은 고딕', sans-serif; }
         h1 { color: #2c3e50; margin-top: 30px; }
         p { color: #555; }
         
-        /* 바둑판 박스 */
-        #board-container {
-            width: 500px;
-            height: 500px;
-            margin: 20px auto;
-            background-color: #e4a054; /* 💡 예쁜 살구빛 나무색을 칠합니다 */
+        /* 💡 바둑판을 그릴 튼튼한 나무 도화지 */
+        canvas {
+            background-color: #e4a054; /* 예쁜 살구빛 나무색 */
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             border: 2px solid #333;
+            cursor: pointer;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -25,33 +23,78 @@
     <h1>아버님 전용 AI 기원 🎴</h1>
     <p>마우스로 바둑판을 클릭해서 돌을 놓아보세요!</p>
     
-    <div id="board-container"></div>
+    <canvas id="goBoard" width="570" height="570"></canvas>
 
     <script>
-        // 1픽셀 투명 이미지 (바둑판 로딩 지연 방지용 마법 꼼수)
-        var fakeImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+        // 1️⃣ 도화지와 마법 펜 준비
+        const canvas = document.getElementById("goBoard");
+        const ctx = canvas.getContext("2d");
         
-        // 1️⃣ 바둑판 엔진 가동! (깃허브에서는 절대 안 막힙니다)
-        var board = new WGo.Board(document.getElementById("board-container"), {
-            width: 500,
-            size: 19,
-            background: fakeImage
-        });
+        const boardSize = 19; // 19줄 바둑판
+        const cellSize = 30;  // 한 칸의 크기 (30픽셀)
+        let isBlackTurn = true; // 흑돌부터 시작!
+        
+        // 바둑판에 돌이 놓였는지 기억하는 빈 장부 만들기
+        const boardData = Array(boardSize).fill().map(() => Array(boardSize).fill(0));
 
-        // 2️⃣ 바둑 심판 부르기
-        var game = new WGo.Game(19);
+        // 2️⃣ 바둑판 격자 선 직접 긋기
+        function drawGrid() {
+            ctx.strokeStyle = "#000000"; // 선 색깔은 검정색
+            ctx.lineWidth = 1; // 선 굵기
 
-        // 3️⃣ 클릭하면 진짜로 돌이 놓이게 만들기!
-        board.addEventListener("click", function(x, y) {
-            var result = game.play(x, y);
+            for (let i = 0; i < boardSize; i++) {
+                // 가로선 찍!
+                ctx.beginPath();
+                ctx.moveTo(cellSize / 2, cellSize / 2 + i * cellSize);
+                ctx.lineTo(canvas.width - cellSize / 2, cellSize / 2 + i * cellSize);
+                ctx.stroke();
 
-            if (typeof result == "number") {
-                // 반칙이 아니면 돌을 착! 하고 놓습니다
-                board.update(game.getPosition());
-            } else {
-                alert("아버님, 거기는 돌을 놓을 수 없는 자리(반칙)입니다!");
+                // 세로선 찍!
+                ctx.beginPath();
+                ctx.moveTo(cellSize / 2 + i * cellSize, cellSize / 2);
+                ctx.lineTo(cellSize / 2 + i * cellSize, canvas.height - cellSize / 2);
+                ctx.stroke();
+            }
+        }
+
+        // 3️⃣ 진짜 바둑알 그리기
+        function drawStone(x, y, color) {
+            ctx.beginPath();
+            ctx.arc(cellSize / 2 + x * cellSize, cellSize / 2 + y * cellSize, cellSize * 0.45, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+            // 바둑알에 약간의 테두리 줘서 입체감 살리기
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "#333";
+            ctx.stroke();
+        }
+
+        // 4️⃣ 마우스로 클릭하면 돌 놓기
+        canvas.addEventListener("click", function(event) {
+            // 마우스 위치 정확히 계산
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            // 몇 번째 줄에 놨는지 반올림으로 계산
+            const x = Math.round((mouseX - cellSize / 2) / cellSize);
+            const y = Math.round((mouseY - cellSize / 2) / cellSize);
+
+            // 바둑판 밖으로 안 나가고, 아직 돌이 없는 빈자리일 때만 놓기
+            if (x >= 0 && x < boardSize && y >= 0 && y < boardSize && boardData[x][y] === 0) {
+                if (isBlackTurn) {
+                    drawStone(x, y, "#111111"); // 까만 흑돌 그리기
+                    boardData[x][y] = 1;
+                } else {
+                    drawStone(x, y, "#EEEEEE"); // 하얀 백돌 그리기
+                    boardData[x][y] = 2;
+                }
+                isBlackTurn = !isBlackTurn; // 흑백 순서 바꾸기
             }
         });
+
+        // 시작하자마자 바둑판 선을 예쁘게 그려줍니다!
+        drawGrid();
     </script>
 </body>
 </html>
